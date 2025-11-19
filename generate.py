@@ -117,7 +117,20 @@ class CrosswordCreator():
         Return True if a revision was made to the domain of `x`; return
         False if no revision was made.
         """
-        raise NotImplementedError
+        revised = False                             # In case no revision is done
+        overlaps = self.crossword.overlaps[x, y]    # Take note of the overlaps
+        if overlaps is not None :                   # In csae their are overlaps
+            remove_word = set()                     # Set of words that need to be remove
+            for x_w in self.domains[x] :            # Iterate in x's
+                overlap_char = x_w(overlaps[0])     # Keep track of overlaps
+                corresponding_y_char = {w[overlaps[1]] for w in self.domains[y]} # Find coresponding overlaps in y
+
+                if overlap_char not in corresponding_y_char :   # If no corresponding is found 
+                    remove_word.add(x_w)                        # Add to the set
+                    revised = True                              # Take note the revision has been done
+            for w in remove_word :                  # Iterate in the set
+                self.domains[x].remove(w)           # Remove set words in the domains
+        return revised                      # Return if revision has been done
 
     def ac3(self, arcs=None):
         """
