@@ -1,6 +1,7 @@
 import sys
 
 from crossword import *
+import itertools
 
 
 class CrosswordCreator():
@@ -141,7 +142,22 @@ class CrosswordCreator():
         Return True if arc consistency is enforced and no domains are empty;
         return False if one or more domains end up empty.
         """
-        raise NotImplementedError
+        if arcs is None: # Create a queue with the variables to be treated
+            queue = list(itertools.product(self.crossword.variables, self.crossword.variables))
+            queue = [arc for arc in queue if arc[0] != arc[1] and self.crossword.overlaps[arc[0], arc[1]] is not None]
+        else:
+            queue = arcs
+        while queue:
+            arc = queue.pop(0)                  # Move first element in queue into arc
+            x, y = arc[0], arc[1]               # Take elements 0 and 1 from arc
+            if self.revise(x, y):               # If revision between elements 0 and 1
+                if not self.domains[x]:         # If no domain of element 0
+                    print("ending ac3")         # End the ac3
+                    return False                     # No arc has been done
+                for z in (self.crossword.neighbors(x) - {y}):   # Iterate in neighbors
+                    queue.append(((z, x)))                      # Add neighbors in teh queue
+        return True                                  # Arc has been done
+
 
     def assignment_complete(self, assignment):
         """
