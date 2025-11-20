@@ -119,12 +119,12 @@ class CrosswordCreator():
         False if no revision was made.
         """
         revised = False                             # In case no revision is done
-        overlaps = self.crossword.overlaps[x, y]    # Take note of the overlaps
-        if overlaps is not None :                   # In csae their are overlaps
+        overlap = self.crossword.overlaps[x, y]    # Take note of the overlaps
+        if overlap is not None :                   # In case their are overlaps
             remove_word = set()                     # Set of words that need to be remove
             for x_w in self.domains[x] :            # Iterate in x's
-                overlap_char = x_w(overlaps[0])     # Keep track of overlaps
-                corresponding_y_char = {w[overlaps[1]] for w in self.domains[y]} # Find coresponding overlaps in y
+                overlap_char = x_w[overlap[0]]     # Keep track of overlaps
+                corresponding_y_char = {w[overlap[1]] for w in self.domains[y]} # Find coresponding overlaps in y
 
                 if overlap_char not in corresponding_y_char :   # If no corresponding is found 
                     remove_word.add(x_w)                        # Add to the set
@@ -240,7 +240,24 @@ class CrosswordCreator():
 
         If no assignment is possible, return None.
         """
-        raise NotImplementedError
+        # Keep track of the counter and tested words :
+        global BACKTRACK_COUNTER
+        global WORDS_TESTED
+        BACKTRACK_COUNTER += 1
+
+        if self.assignment_complete(assignment):        # If all variables are assigned, 
+            return assignment                           # return assignment
+
+        var = self.select_unassigned_variable(assignment)       # Otherwise, 
+        for val in self.order_domain_values(var, assignment):   # Iterate in vals 
+            assignment[var] = val
+            WORDS_TESTED += 1                                   # Icrement the counter
+            if self.consistent(assignment):                     # If consistent
+                result = self.backtrack(assignment)             # Call backtrack to create a loop 
+                if result:
+                    return result
+            del assignment[var]
+        return None
 
 
 def main():
