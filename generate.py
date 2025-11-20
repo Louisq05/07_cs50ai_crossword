@@ -1,8 +1,8 @@
+import copy
+import itertools
 import sys
 
 from crossword import *
-import itertools
-
 
 class CrosswordCreator():
 
