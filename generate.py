@@ -164,41 +164,26 @@ class CrosswordCreator():
         Return True if `assignment` is complete (i.e., assigns a value to each
         crossword variable); return False otherwise.
         """
-        for a in self.domains :
-            if a not in assignment :
-                return False
-        return True
+        if set(assignment.keys()) == self.crossword.variables and all(assignment.values()):
+            return True
+        else:
+            return False
 
     def consistent(self, assignment):
         """
         Return True if `assignment` is consistent (i.e., words fit in crossword
         puzzle without conflicting characters); return False otherwise.
         """
-        used_variables = []
+        if len(set(assignment.values())) != len(set(assignment.keys())):
+            return False
+        if any(variable.length != len(word) for variable, word in assignment.items()):
+            return False
 
-        for var_x in assignment:        # Iterate in assignements
-            val_x = assignment[var_x]
-
-            # Inconsistent if a word is used multipke times
-            if val_x in used_variables:
-                return False
-            used_variables.append(val_x)
-
-            # Inconsistent if the lenght is incorrect
-            if len(val_x) != var_x.length:
-                return False
-
-            # Inconsistent if overlaps are not respected
-            for var_y in self.crossword.neighbors(var_x):
-                if var_y in assignment:
-                    val_y = assignment[var_y]
-
-                    # Check if neighbor variable is assigned and satisfies constraints
-                    if not self.overlap_satisfied(var_x, var_y, val_x, val_y):
-                        return False
-
-        # Otherwise evrythin is consistent
-        return True
+        for variable, word in assignment.items():
+            for neighbor in self.crossword.neighbors(variable).intersection(assignment.keys()):
+                overlap = self.crossword.overlaps[variable, neighbor]
+                if word[overlap[0]] != assignment[neighbor][overlap[1]]:
+                    return False
 
     def order_domain_values(self, var, assignment):
         """
